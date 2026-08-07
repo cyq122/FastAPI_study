@@ -1,4 +1,4 @@
-from fastapi import FastAPI,Path,Query,HTTPException
+from fastapi import FastAPI,Path,Query,HTTPException,Depends
 from pydantic import BaseModel,Field
 from fastapi.responses import HTMLResponse,FileResponse
 
@@ -6,6 +6,23 @@ from fastapi.responses import HTMLResponse,FileResponse
 app = FastAPI(title="FastAPI学习项目", version="0.1.0")
 
 #uvicorn main:app --reload来运行项目
+
+#中间件----------------------------------------------------------------------------------------
+
+#中间件：访问根目录
+@app.middleware("http")
+async def middleware1(request,call_next):
+    print("中间件1开始-start")
+    response = await call_next(request)#await异步标识，后面加需要异步执行的代码
+    print("中间件1结束-end")
+    return response
+
+@app.middleware("http")
+async def middleware2(request,call_next):
+    print("中间件2开始-start")
+    response = await call_next(request)#await异步标识，后面加需要异步执行的代码
+    print("中间件2结束-end")
+    return response
 
 #访问API交互式文档：+docs
 @app.get("/")
@@ -123,3 +140,20 @@ async def get_exception_news(id :int):
         raise HTTPException(status_code=404,detail="您查找的新闻不存在")
     else:
         return {f"这是第{id}本书"}
+
+#依赖注入----------------------------------------------------------------------------------------
+#分页参数逻辑共用：玩具列表和工厂列表
+#1.依赖项
+async def common_parameters(
+    skip:int=Query(default=0,ge=0),
+    limit:int=Query(default=10,le=40),
+):
+    return {"skip":skip,"limit":limit}
+#2.注入依赖
+@app.get("/toys/toys_list")
+async def get_toys_list(commons = Depends(common_parameters)):
+    return commons
+
+@app.get("/factory/factory_list")
+async def get_factory_list(commons = Depends(common_parameters)):
+    return commons
