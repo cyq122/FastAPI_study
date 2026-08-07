@@ -1,5 +1,6 @@
-from fastapi import FastAPI,Path,Query
+from fastapi import FastAPI,Path,Query,HTTPException
 from pydantic import BaseModel,Field
+from fastapi.responses import HTMLResponse,FileResponse
 
 # 实例化app对象，创建FastAPI实例
 app = FastAPI(title="FastAPI学习项目", version="0.1.0")
@@ -20,6 +21,8 @@ async def get_user_hello():
 @app.get("/hello")
 async def get_hello():
     return {"msg":"你好 FastAPI"}
+
+#路径参数----------------------------------------------------------------------------------------
 
 @app.get("/book/{id}")
 async def get_book1(id: int):
@@ -44,7 +47,7 @@ async def get_book_author(name: str = Path(...,max_length=10,min_length=2,descri
 async def get_news(id: int = Path(...,gt=1,le=100),name: str = Path(...,max_length=10,min_length=2)):
     return {"msg":f"这份新闻是第{id}类新闻，分类名称是：{name}"}
 
-#查询参数
+#查询参数----------------------------------------------------------------------------------------
 #查询新闻 ->分页，skip：跳过的记录数，limit：返回的记录数
 @app.get("/news/news_list")
 async def get_news_list(
@@ -61,7 +64,7 @@ async def get_books_list(
 ):
     return {"图书的类别":{classes},"图书的价格":{price}}
 
-#请求体
+#请求体----------------------------------------------------------------------------------------
 #定义类型
 class User(BaseModel):
     name:str=Field(default="cyq",min_length=2,max_length=10,description="用户名")
@@ -83,3 +86,40 @@ class Book(BaseModel):
 @app.post("/Bookcity")
 async def book_inf(book:Book):
     return book
+
+#响应类型----------------------------------------------------------------------------------------
+
+#接口：响应HTML代码
+@app.get("/html",response_class=HTMLResponse)
+async def get_html():
+    return "<h1>Hello World!!!</h1>"
+
+#接口：返回图片内容
+@app.get("/file")
+async def get_file():
+    file_path = "87621EA7-B17D-4F59-8435-D782470A8F3C_1_105_c.jpeg"
+    return FileResponse(file_path)
+
+#新闻接口：响应自定义数据格式
+class News(BaseModel):
+    id:int
+    title:str
+    content:str
+
+@app.get("/response_news/{id}",response_model=News)
+async def get_news_response(id: int):
+    return{
+        "id":id,
+        "title":f"这是第{id}本书",
+        "content":f"这是一本Python教程"
+}
+
+#异常处理----------------------------------------------------------------------------------------
+#需求：按id查询新闻（1-6）
+@app.get("/news_exception/{id}")
+async def get_exception_news(id :int):
+    id_list=[1,2,3,4,5,6]
+    if id not in id_list:
+        raise HTTPException(status_code=404,detail="您查找的新闻不存在")
+    else:
+        return {f"这是第{id}本书"}
