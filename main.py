@@ -157,3 +157,5 @@ async def get_toys_list(commons = Depends(common_parameters)):
 @app.get("/factory/factory_list")
 async def get_factory_list(commons = Depends(common_parameters)):
     return commons
+
+
