@@ -1,11 +1,14 @@
 from fastapi import FastAPI
-from backend.routers import news
+from backend.routers import news,user
 from fastapi.middleware.cors import CORSMiddleware
+from backend.utils.exception_handlers import register_exception_handlers
 
 
 app = FastAPI()
 
+register_exception_handlers(app)
 app.include_router(news.router)
+app.include_router(user.router)
 
 origins = [
     "http://localhost",
