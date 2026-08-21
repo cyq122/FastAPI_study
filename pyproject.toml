@@ -9,7 +9,9 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "aiomysql>=0.3.2",
+    "bcrypt==3.2.2",
     "fastapi>=0.141.1",
+    "passlib[bcrypt]>=1.7.4",
     "sqlalchemy[asyncio]>=2.0.51",
     "uvicorn>=0.52.1",
 ]
